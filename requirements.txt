@@ -1,0 +1,5 @@
+pandas
+scikit-learn==1.3.0
+SPARQLWrapper
+altair[all]
+plotly==5.9.0
