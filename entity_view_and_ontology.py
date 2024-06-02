@@ -135,43 +135,53 @@ def create_chart(alignmentAlgorithmOutputFilename):
     return chart
 
 def createEntity_chart(alignmentAlgorithmOutputFilename):
-    entityIDs = pd.read_csv('data/' + alignmentAlgorithmOutputFilename + '.csv')
+    alignmentData1 = pd.read_csv('data/' + alignmentAlgorithmOutputFilename + '.csv')
+    alignmentData2 = pd.read_csv('data/' + alignmentAlgorithmOutputFilename + '.csv')
+    alignmentData2.rename(columns = {'Ent1_ID':'temp'}, inplace = True)
+    alignmentData2.rename(columns = {'Ent2_ID':'Ent1_ID'}, inplace = True)
+    alignmentData2.rename(columns = {'temp':'Ent2_ID'}, inplace = True)
 
-    entityIDs2 = pd.read_csv('data/' + alignmentAlgorithmOutputFilename + '.csv')
-    entityIDs2.rename(columns = {'Ent1_ID':'temp'}, inplace = True)
-    entityIDs2.rename(columns = {'Ent2_ID':'Ent1_ID'}, inplace = True)
-    entityIDs2.rename(columns = {'temp':'Ent2_ID'}, inplace = True)
+    relTriplesEnRu = pd.read_csv('data/rel_triples_en_ru.csv', sep=',', header=None, names=['Ent1_ID', 'Relation', 'Ent2_ID'])
 
-    relTriplesEnRu = pd.read_csv('data/rel_triples_en_ru.csv', sep='\t', header=None, names=['Ent1_ID', 'Relation', 'Ent2_ID'])
-
-    entities = entityIDs['Ent1_ID'].to_list()
-    names = (entityIDs['Ent1_ID'].astype(str) + ": " + entityIDs['Ent1'].astype(str)).to_list()
+    entities = alignmentData1['Ent1_ID'].to_list()
+    names = (alignmentData1['Ent1_ID'].astype(str) + ": " + alignmentData1['Ent1'].astype(str)).to_list()
     entityDropdown = alt.binding_select(options=entities, labels=names, name="Entity")
     entitySelection = alt.selection_point(fields=['Ent1_ID'], bind=entityDropdown, empty=False)
 
-    ent1Chart = alt.Chart(entityIDs, width=500, height=500, title='Entity View').mark_circle(size=650).interactive().encode(
-        x=alt.X('X'),
-        y=alt.Y('Y'),
-        color='Type',
-        opacity=alt.condition(entitySelection, alt.value(1.0), alt.value(0.0)),
-        tooltip=['Ent1_ID', 'X', 'Y', 'Ent1', 'Language', 'Type']
-    ).add_params(entitySelection).transform_filter(entitySelection)
+    xscale = alt.Scale(domain=[-120, 140])
+    yscale = alt.Scale(domain=[-120, 140])
 
-    ent1RelatedEntitiesChart = alt.Chart(relTriplesEnRu, width=500, height=500).mark_circle(size=100).interactive().encode(
-        x=alt.X('X:Q'),
-        y=alt.Y('Y:Q'),
-        opacity=alt.condition(entitySelection, alt.value(1.0), alt.value(0.0)),
-        color='Type:N',
-        tooltip=['Ent2_ID', 'X:Q', 'Y:Q', 'Language:N', 'Type:N']
-    ).transform_lookup(
-        lookup='Ent1_ID',
-        from_=alt.LookupData(entityIDs, key="Ent1Full", fields=['Ent1_ID'])
-    ).transform_lookup(
-        lookup='Ent2_ID',
-        from_=alt.LookupData(entityIDs, key="Ent1Full", fields=['X', 'Y', 'Language', 'Type'])
+    ent1Chart = alt.Chart(alignmentData1, width=500, height=500, title='Entity View').mark_circle(size=650
+    ).add_params(entitySelection).interactive().encode(
+        x=alt.X('X').scale(xscale),
+        y=alt.Y('Y').scale(yscale),
+        color='Language',
+        opacity=alt.value(1.0),
+        tooltip=[   alt.Tooltip('Ent1_ID', title='Entity ID'),
+                    'X', 
+                    'Y', 
+                    alt.Tooltip('Ent1', title='Entity Name'), 
+                    'Language', 
+                    'Type'
+                ]
     ).transform_filter(entitySelection)
 
-    ent1EdgesToRelatedEntitiesChart = alt.Chart(relTriplesEnRu, width=500, height=500).mark_rule(strokeWidth=0.75).interactive().encode(
+    ent1RelatedEntitiesChart = alt.Chart(relTriplesEnRu).mark_circle(size=100).encode(
+        x=alt.X('X:Q'),
+        y=alt.Y('Y:Q'),
+        opacity=alt.value(1.0),
+        color='Language:N',
+        tooltip=['ID:Q', 'Name:N', 'X:Q', 'Y:Q', 'Language:N', 'Type:N', 'Relation']
+    ).transform_lookup(
+        lookup='Ent1_ID',
+        from_=alt.LookupData(alignmentData1, key="Ent1Full", fields=['Ent1_ID'])
+    ).transform_lookup(
+        lookup='Ent2_ID',
+        from_=alt.LookupData(alignmentData1, key="Ent1Full", fields=['Ent1_ID', 'Ent1', 'X', 'Y', 'Language', 'Type']),
+        as_=['ID', 'Name', 'X', 'Y', 'Language', 'Type']
+    ).transform_filter(entitySelection)
+
+    ent1EdgesToRelatedEntitiesChart = alt.Chart(relTriplesEnRu).mark_rule(strokeWidth=0.75).encode(
         x=alt.X('X:Q'),
         y=alt.Y('Y:Q'),
         x2=alt.X2('X2:Q'),
@@ -179,36 +189,65 @@ def createEntity_chart(alignmentAlgorithmOutputFilename):
         opacity=alt.condition(entitySelection, alt.value(1.0), alt.value(0.0))
     ).transform_lookup(
         lookup='Ent1_ID',
-        from_=alt.LookupData(entityIDs, key="Ent1Full", fields=['X', 'Y'])
+        from_=alt.LookupData(alignmentData1, key="Ent1Full", fields=['X', 'Y'])
     ).transform_lookup(
         lookup='Ent2_ID',
-        from_=alt.LookupData(entityIDs, key="Ent1Full", fields=['X', 'Y']),
+        from_=alt.LookupData(alignmentData1, key="Ent1Full", fields=['X', 'Y']),
         as_=['X2', 'Y2']
     ).transform_lookup(
         lookup='Ent1_ID',
-        from_=alt.LookupData(entityIDs, key="Ent1Full", fields=['Ent1_ID'])
+        from_=alt.LookupData(alignmentData1, key="Ent1Full", fields=['Ent1_ID'])
     ).transform_filter(entitySelection)
 
-    ent2Chart = alt.Chart(entityIDs2, width=500, height=500).mark_circle(size=650).interactive().encode(
-        x=alt.X('X:Q'),
-        y=alt.Y('Y:Q'),
-        color='Type',
+    edgesText1 = alt.Chart(relTriplesEnRu).mark_text(fontSize=11).encode(
+        x=alt.X('Xa:Q'),
+        y=alt.Y('Ya:Q'),
         opacity=alt.condition(entitySelection, alt.value(1.0), alt.value(0.0)),
-        tooltip=['Ent1_ID', 'X', 'Y', 'Ent1', 'Language', 'Type']
-    ).transform_filter(entitySelection)
-
-    ent2RelatedEntitiesChart = alt.Chart(relTriplesEnRu, width=500, height=500).mark_circle(size=100).interactive().encode(
-        x=alt.X('X:Q'),
-        y=alt.Y('Y:Q'),
-        opacity=alt.condition(entitySelection, alt.value(1.0), alt.value(0.0)),
-        color='Type:N',
-        tooltip=['Ent2_ID', 'X:Q', 'Y:Q', 'Language:N', 'Type:N']
+        text='Relation'
     ).transform_lookup(
         lookup='Ent1_ID',
-        from_=alt.LookupData(entityIDs2, key="Ent1Full", fields=['Ent1_ID'])
+        from_=alt.LookupData(alignmentData1, key="Ent1Full", fields=['X', 'Y'])
     ).transform_lookup(
         lookup='Ent2_ID',
-        from_=alt.LookupData(entityIDs, key="Ent1Full", fields=['X', 'Y', 'Language', 'Type'])
+        from_=alt.LookupData(alignmentData1, key="Ent1Full", fields=['X', 'Y']),
+        as_=['X2', 'Y2']
+    ).transform_lookup(
+        lookup='Ent1_ID',
+        from_=alt.LookupData(alignmentData1, key="Ent1Full", fields=['Ent1_ID'])
+    ).transform_filter(entitySelection
+    ).transform_calculate(
+        Xa='(datum.X + datum.X2) / 2',
+        Ya='(datum.Y + datum.Y2) / 2'
+    )
+
+    ent2Chart = alt.Chart(alignmentData2).mark_circle(size=650
+    ).encode(
+        x=alt.X('X'),
+        y=alt.Y('Y'),
+        color='Language',
+        opacity=alt.value(1.0),
+        tooltip=[   alt.Tooltip('Ent1_ID', title='Entity ID'),
+                    'X', 
+                    'Y', 
+                    alt.Tooltip('Ent1', title='Entity Name'), 
+                    'Language', 
+                    'Type'
+                ]
+    ).transform_filter(entitySelection)
+
+    ent2RelatedEntitiesChart = alt.Chart(relTriplesEnRu).mark_circle(size=100).encode(
+        x=alt.X('X:Q'),
+        y=alt.Y('Y:Q'),
+        opacity=alt.value(1.0),
+        color='Language:N',
+        tooltip=['ID:Q', 'Name:N', 'X:Q', 'Y:Q', 'Language:N', 'Type:N', 'Relation']
+    ).transform_lookup(
+        lookup='Ent1_ID',
+        from_=alt.LookupData(alignmentData2, key="Ent1Full", fields=['Ent1_ID'])
+    ).transform_lookup(
+        lookup='Ent2_ID',
+        from_=alt.LookupData(alignmentData2, key="Ent1Full", fields=['Ent1_ID', 'Ent1', 'X', 'Y', 'Language', 'Type']),
+        as_=['ID', 'Name', 'X', 'Y', 'Language', 'Type']
     ).transform_filter(entitySelection)
 
     ent2EdgesToRelatedEntitiesChart = alt.Chart(relTriplesEnRu, width=500, height=500).mark_rule(strokeWidth=0.75).interactive().encode(
@@ -216,20 +255,41 @@ def createEntity_chart(alignmentAlgorithmOutputFilename):
         y=alt.Y('Y:Q'),
         x2=alt.X2('X2:Q'),
         y2=alt.Y2('Y2:Q'),
-        opacity=alt.condition(entitySelection, alt.value(1.0), alt.value(0.0))
+        opacity=alt.condition(entitySelection, alt.value(1.0), alt.value(0.0)),
     ).transform_lookup(
         lookup='Ent1_ID',
-        from_=alt.LookupData(entityIDs2, key="Ent1Full", fields=['X', 'Y'])
+        from_=alt.LookupData(alignmentData2, key="Ent1Full", fields=['X', 'Y'])
     ).transform_lookup(
         lookup='Ent2_ID',
-        from_=alt.LookupData(entityIDs2, key="Ent1Full", fields=['X', 'Y']),
+        from_=alt.LookupData(alignmentData2, key="Ent1Full", fields=['X', 'Y']),
         as_=['X2', 'Y2']
     ).transform_lookup(
         lookup='Ent1_ID',
-        from_=alt.LookupData(entityIDs2, key="Ent1Full", fields=['Ent1_ID'])
+        from_=alt.LookupData(alignmentData2, key="Ent1Full", fields=['Ent1_ID'])
     ).transform_filter(entitySelection)
 
-    relationsBetweenAlignedEntitiesChart = alt.Chart(entityIDs, width=500, height=500).mark_rule(strokeWidth=0.9).interactive().encode(
+    edgesText2 = alt.Chart(relTriplesEnRu).mark_text(fontSize=11).encode(
+        x=alt.X('Xa:Q'),
+        y=alt.Y('Ya:Q'),
+        opacity=alt.condition(entitySelection, alt.value(1.0), alt.value(0.0)),
+        text='Relation'
+    ).transform_lookup(
+        lookup='Ent1_ID',
+        from_=alt.LookupData(alignmentData2, key="Ent1Full", fields=['X', 'Y'])
+    ).transform_lookup(
+        lookup='Ent2_ID',
+        from_=alt.LookupData(alignmentData2, key="Ent1Full", fields=['X', 'Y']),
+        as_=['X2', 'Y2']
+    ).transform_lookup(
+        lookup='Ent1_ID',
+        from_=alt.LookupData(alignmentData2, key="Ent1Full", fields=['Ent1_ID'])
+    ).transform_filter(entitySelection
+    ).transform_calculate(
+        Xa='(datum.X + datum.X2) / 2',
+        Ya='(datum.Y + datum.Y2) / 2'
+    )
+
+    relationsBetweenAlignedEntitiesChart = alt.Chart(alignmentData1).mark_rule(strokeWidth=0.9).encode(
         x=alt.X('X:Q'),
         y=alt.Y('Y:Q'),
         x2=alt.X2('X2:Q'),
@@ -238,14 +298,23 @@ def createEntity_chart(alignmentAlgorithmOutputFilename):
         color=alt.value('red')
     ).transform_lookup(
         lookup='Ent2_ID',
-        from_=alt.LookupData(entityIDs, key="Ent1_ID", fields=['X', 'Y']),
+        from_=alt.LookupData(alignmentData1, key="Ent1_ID", fields=['X', 'Y']),
         as_=['X2', 'Y2']
     ).transform_filter(entitySelection)
-
-    chart = (ent1EdgesToRelatedEntitiesChart + ent2EdgesToRelatedEntitiesChart + relationsBetweenAlignedEntitiesChart + ent2Chart + ent1Chart + ent1RelatedEntitiesChart + ent2RelatedEntitiesChart)
+    
+    chart  =   relationsBetweenAlignedEntitiesChart + \
+                ent1EdgesToRelatedEntitiesChart + \
+                ent1Chart + \
+                ent1RelatedEntitiesChart + \
+                edgesText1 + \
+                ent2EdgesToRelatedEntitiesChart + \
+                ent2Chart + \
+                edgesText2 + \
+                ent2RelatedEntitiesChart
     chart.encode(
         order=alt.condition(entitySelection, alt.value(1), alt.value(0))
     )
+
     return chart
 
 if __name__ == '__main__':
