@@ -1,5 +1,6 @@
 import altair as alt
 import pandas as pd
+import os
 
 alt.data_transformers.enable("vegafusion")
 
@@ -258,6 +259,9 @@ def create_chart(alignmentAlgorithmOutputFilename):
     return chart1 | chart2
 
 if __name__ == '__main__':
+    if os.path.isdir('results') == False:
+        os.mkdir('results')
+
     alignmentAlgorithmOutputFilename = 'MultiKE_EN_RU_15K_V1'
 
     alignmentChart = create_chart(alignmentAlgorithmOutputFilename)

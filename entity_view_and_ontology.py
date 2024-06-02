@@ -1,5 +1,6 @@
 import altair as alt
 import pandas as pd
+import os
 
 alt.data_transformers.enable("vegafusion")
 
@@ -248,6 +249,9 @@ def createEntity_chart(alignmentAlgorithmOutputFilename):
     return chart
 
 if __name__ == '__main__':
+    if os.path.isdir('results') == False:
+        os.mkdir('results')
+    
     alignmentAlgorithmOutputFilename = 'MultiKE_EN_RU_15K_V1'
 
     chartMultiKEType = create_chart(alignmentAlgorithmOutputFilename)

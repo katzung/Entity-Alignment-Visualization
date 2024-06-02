@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from math import log, e
+import os
 
 def recursiveCount(df, className):
     classIndex = df.index[df['subClass'] == className].to_list().pop()
@@ -66,4 +67,7 @@ def createTreemap(alignmentAlgorithmOutputFilename):
             bruh.write(line)
 
 if __name__ == '__main__':
+    if os.path.isdir('results') == False:
+        os.mkdir('results')
+
     createTreemap('MultiKE_EN_RU_15K_V1')
