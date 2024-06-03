@@ -323,8 +323,8 @@ if __name__ == '__main__':
     
     alignmentAlgorithmOutputFilename = 'MultiKE_EN_RU_15K_V1'
 
-    chartMultiKEType = create_chart(alignmentAlgorithmOutputFilename)
-    chartMultiKEType.save('results/ontology_' + alignmentAlgorithmOutputFilename + '.html')
+    chartType = create_chart(alignmentAlgorithmOutputFilename)
+    chartType.save('results/ontology_' + alignmentAlgorithmOutputFilename + '.html')
 
-    chartEntitiesMultiKE = createEntity_chart(alignmentAlgorithmOutputFilename)
-    chartEntitiesMultiKE.save('results/entities_' + alignmentAlgorithmOutputFilename + '.html')
+    chartEntities = createEntity_chart(alignmentAlgorithmOutputFilename)
+    chartEntities.save('results/entities_' + alignmentAlgorithmOutputFilename + '.html')
