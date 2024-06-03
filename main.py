@@ -4,19 +4,20 @@ import treemap
 import os
 
 if __name__ == '__main__':
-    if os.path.isdir('results') == False:
-        os.mkdir('results')
+    alignmentAlgorithmOutputFilename = 'MultiKE_EN_RU_15K_V1_graph'
+    saveFolder = 'results/' + alignmentAlgorithmOutputFilename
 
-    alignmentAlgorithmOutputFilename = 'MultiKE_EN_RU_15K_V1'
+    if os.path.isdir(saveFolder) == False:
+        os.mkdir(saveFolder)
 
     entitiesWithOntologyChart = entity_view_and_ontology.create_chart(alignmentAlgorithmOutputFilename)
-    entitiesWithOntologyChart.save('results/ontology_' + alignmentAlgorithmOutputFilename + '.html')
+    entitiesWithOntologyChart.save(saveFolder + '/ontology_' + alignmentAlgorithmOutputFilename + '.html')
 
     entitiesChart = entity_view_and_ontology.createEntity_chart(alignmentAlgorithmOutputFilename)
-    entitiesChart.save('results/entities_' + alignmentAlgorithmOutputFilename + '.html')
+    entitiesChart.save(saveFolder + '/entities_' + alignmentAlgorithmOutputFilename + '.html')
 
     entitiesWithTypesChart = entity_view_with_types.create_chart(alignmentAlgorithmOutputFilename)
-    entitiesWithTypesChart.save('results/entitiesWithTypes_' + alignmentAlgorithmOutputFilename + '.html')
+    entitiesWithTypesChart.save(saveFolder + '/entitiesWithTypes_' + alignmentAlgorithmOutputFilename + '.html')
 
     treemap.createTreemap(alignmentAlgorithmOutputFilename)
 

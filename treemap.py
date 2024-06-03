@@ -62,12 +62,13 @@ def createTreemap(alignmentAlgorithmOutputFilename):
     fig.update_layout(margin = dict(t=50, l=25, r=25, b=25))
 
     figure = fig.to_html()
-    with open('results/treemap_' + alignmentAlgorithmOutputFilename + '.html', 'w') as bruh:
+    
+    saveFolder = 'results/' + alignmentAlgorithmOutputFilename
+    if os.path.isdir(saveFolder) == False:
+        os.mkdir(saveFolder)
+    with open(saveFolder + '/treemap_' + alignmentAlgorithmOutputFilename + '.html', 'w') as bruh:
         for line in figure:
             bruh.write(line)
 
 if __name__ == '__main__':
-    if os.path.isdir('results') == False:
-        os.mkdir('results')
-
     createTreemap('MultiKE_EN_RU_15K_V1')

@@ -1,5 +1,5 @@
 Misc/
-results/*.html
+results/**/*.html
 
 _vegafusion_data/
 __pycache__/
