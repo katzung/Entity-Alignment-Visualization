@@ -4,6 +4,7 @@ results/**/*.html
 _vegafusion_data/
 __pycache__/
 .venv/
+.venv1/
 
 TODO
 github_token.txt

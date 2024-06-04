@@ -1,5 +1,5 @@
 pandas
-scikit-learn==1.3.0
 SPARQLWrapper
-altair[all]
+altair
+vegafusion[embed]>=1.5.0
 plotly==5.9.0

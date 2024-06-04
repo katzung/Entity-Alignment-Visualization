@@ -4,7 +4,7 @@ import treemap
 import os
 
 if __name__ == '__main__':
-    alignmentAlgorithmOutputFilename = 'MultiKE_EN_RU_15K_V1_graph'
+    alignmentAlgorithmOutputFilename = 'MultiKE_EN_RU_15K_V1'
     saveFolder = 'results/' + alignmentAlgorithmOutputFilename
 
     if os.path.isdir(saveFolder) == False:
