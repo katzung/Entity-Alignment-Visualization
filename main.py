@@ -4,9 +4,13 @@ import treemap
 import os
 
 if __name__ == '__main__':
-    alignmentAlgorithmOutputFilename = 'MultiKE_EN_RU_15K_V1'
-    saveFolder = 'results/' + alignmentAlgorithmOutputFilename
+    # Готовые опции:
+    # AttrE_EN_RU_15K_V1, AttrE_EN_RU_15K_V1_graph
+    # MultiKE_EN_RU_15K_V1, MultiKE_EN_RU_15K_V1_graph
+    # SEA_EN_RU_15K_V1
+    alignmentAlgorithmOutputFilename = 'AttrE_EN_RU_15K_V1_graph'
 
+    saveFolder = 'results/' + alignmentAlgorithmOutputFilename
     if os.path.isdir(saveFolder) == False:
         os.mkdir(saveFolder)
 
